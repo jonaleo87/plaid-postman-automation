@@ -1,0 +1,1025 @@
+{
+	"info": {
+		"_postman_id": "b58d2e8f-7874-469e-ae2c-be15394c45a6",
+		"name": "Plaid Sandbox API",
+		"description": "> &lt;p &gt;&quot;Este proyecto demuestra la integración con la API Sandbox de Plaid para simular interacciones financieras. Se prueban productos clave como Auth, Transactions e Identity, utilizando endpoints específicos para autenticar usuarios, recuperar cuentas, transacciones e información de identidad. El proyecto incluye scripts de prueba automatizados y variables dinámicas para gestionar tokens.&quot; &lt;/p&gt;",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23083255"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Create Link Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"pm.environment.set(\"link_token\", jsonData.link_token);",
+									"",
+									"pm.test(\"TC01 | Validate status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"TC02 | Validate request method is POST\", function () {",
+									"    pm.expect(pm.request.method).to.eql(\"POST\");",
+									"});",
+									"",
+									"pm.test(\"TC03 | Validate response time is less than 2000ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"pm.test(\"TC04 | Validate Authorization header is present\", function () {",
+									"    pm.expect(pm.request.headers.has(\"Authorization\")).to.be.false;",
+									"});",
+									"",
+									"pm.test(\"TC05 | Validate Content-Type is application/json\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"TC06 | Validate request body has correct properties\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData).to.have.property(\"client_id\");",
+									"    pm.expect(jsonData).to.have.property(\"secret\");",
+									"    pm.expect(jsonData).to.have.property(\"user\");",
+									"    pm.expect(jsonData.user).to.have.property(\"client_user_id\");",
+									"    pm.expect(jsonData).to.have.property(\"client_name\");",
+									"    pm.expect(jsonData).to.have.property(\"products\");",
+									"    pm.expect(jsonData).to.have.property(\"country_codes\");",
+									"    pm.expect(jsonData).to.have.property(\"language\");",
+									"});",
+									"",
+									"pm.test(\"TC07 | Validate Request body properties have correct types\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData.client_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.secret).to.be.a(\"string\");",
+									"    pm.expect(jsonData.user.client_user_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.client_name).to.be.a(\"string\");",
+									"    pm.expect(jsonData.products).to.be.an(\"array\");",
+									"    pm.expect(jsonData.country_codes).to.be.an(\"array\");",
+									"    pm.expect(jsonData.language).to.be.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"TC08 | Validate Response body has correct properties\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"expiration\");",
+									"    pm.expect(jsonData).to.have.property(\"link_token\");",
+									"    pm.expect(jsonData).to.have.property(\"request_id\");",
+									"});",
+									"",
+									"pm.test(\"TC09 | Validate Response body properties have correct types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.expiration).to.be.a(\"string\");",
+									"    pm.expect(jsonData.link_token).to.be.a(\"string\");",
+									"    pm.expect(jsonData.request_id).to.be.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"TC10| Valdiate Link token has correct format\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const tokenRegex = /^link-sandbox-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;",
+									"    pm.expect(jsonData.link_token).to.match(tokenRegex);",
+									"});",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"client_id\": \"{{plaid_client_id}}\",\n  \"secret\": \"{{plaid_secret}}\",\n  \"user\": {\n    \"client_user_id\": \"unique_user_id\"\n  },\n  \"client_name\": \"Your App Name\",\n  \"products\": [\"auth\", \"transactions\"],\n  \"country_codes\": [\"US\"],\n  \"language\": \"en\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{plaid_base_url}}/link/token/create",
+							"host": [
+								"{{plaid_base_url}}"
+							],
+							"path": [
+								"link",
+								"token",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Sandbox Public Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"pm.environment.set(\"public_token\", jsonData.public_token);",
+									"",
+									"pm.test(\"TC01 | Validate status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"TC02 | Validate request method is POST\", function () {",
+									"    pm.expect(pm.request.method).to.eql(\"POST\");",
+									"});",
+									"",
+									"pm.test(\"TC03 | Validate response time is less than 1000ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});",
+									"",
+									"pm.test(\"TC04 | Authorization header is present\", function () {",
+									"    pm.expect(pm.request.headers.has(\"Authorization\")).to.be.false;",
+									"});",
+									"",
+									"pm.test(\"TC05 | Validate content-Type is application/json\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"TC06 | Validate request body has correct properties\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData).to.have.property(\"client_id\");",
+									"    pm.expect(jsonData).to.have.property(\"secret\");",
+									"    pm.expect(jsonData).to.have.property(\"institution_id\");",
+									"    pm.expect(jsonData).to.have.property(\"initial_products\");",
+									"});",
+									"",
+									"pm.test(\"TC07 | Validate request body properties have correct types\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData.client_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.secret).to.be.a(\"string\");",
+									"    pm.expect(jsonData.institution_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.initial_products).to.be.an(\"array\");",
+									"});",
+									"",
+									"pm.test(\"TC08 | Validate response body has correct properties\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"public_token\");",
+									"    pm.expect(jsonData).to.have.property(\"request_id\");",
+									"});",
+									"",
+									"pm.test(\"TC09 | Validate response body properties have correct types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.public_token).to.be.a(\"string\");",
+									"    pm.expect(jsonData.request_id).to.be.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"TC10 | Validate public token has correct format\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const tokenRegex = /^public-sandbox-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;",
+									"    pm.expect(jsonData.public_token).to.match(tokenRegex);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"client_id\": \"{{plaid_client_id}}\",\n  \"secret\": \"{{plaid_secret}}\",\n  \"institution_id\": \"ins_109508\",\n  \"initial_products\": [\"auth\", \"transactions\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{plaid_base_url}}/sandbox/public_token/create",
+							"host": [
+								"{{plaid_base_url}}"
+							],
+							"path": [
+								"sandbox",
+								"public_token",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Exchange Public Token for Access Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"pm.environment.set(\"access_token\", jsonData.access_token);",
+									"",
+									"pm.test(\"TC01 | Validate status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"TC02 | Validate request method is POST\", function () {",
+									"    pm.expect(pm.request.method).to.eql(\"POST\");",
+									"});",
+									"",
+									"pm.test(\"TC03 | Validate response time is less than 1000ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});",
+									"",
+									"pm.test(\"TC04 | Validate content-type is application/json\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"TC05 | Validate request body has correct properties\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData).to.have.property(\"client_id\");",
+									"    pm.expect(jsonData).to.have.property(\"secret\");",
+									"    pm.expect(jsonData).to.have.property(\"public_token\");",
+									"});",
+									"",
+									"pm.test(\"TC06 | Validate request body properties have correct types\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData.client_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.secret).to.be.a(\"string\");",
+									"    pm.expect(jsonData.public_token).to.be.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"TC07 | Validate response body has correct properties\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"access_token\");",
+									"    pm.expect(jsonData).to.have.property(\"item_id\");",
+									"    pm.expect(jsonData).to.have.property(\"request_id\");",
+									"});",
+									"",
+									"pm.test(\"TC08 | Validate response body properties have correct types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.access_token).to.be.a(\"string\");",
+									"    pm.expect(jsonData.item_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.request_id).to.be.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"TC09 | Validate access token has correct format\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const tokenRegex = /^access-sandbox-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;",
+									"    pm.expect(jsonData.access_token).to.match(tokenRegex);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"client_id\": \"{{plaid_client_id}}\",\n  \"secret\": \"{{plaid_secret}}\",\n  \"public_token\": \"{{public_token}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{plaid_base_url}}/item/public_token/exchange",
+							"host": [
+								"{{plaid_base_url}}"
+							],
+							"path": [
+								"item",
+								"public_token",
+								"exchange"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "Get Transactions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"TC01 | Validate status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"TC02 | Validate request method is POST\", function () {",
+									"    pm.expect(pm.request.method).to.eql(\"POST\");",
+									"});",
+									"",
+									"pm.test(\"TC03 | Validate response time is less than 1500ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1500);",
+									"});",
+									"",
+									"pm.test(\"TC04 | Validate authorization header is present\", function () {",
+									"    pm.expect(pm.request.headers.has(\"Authorization\")).to.be.false;",
+									"});",
+									"",
+									"pm.test(\"TC05 | Validate content-type is application/json\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"TC06 | Validate request body has correct properties\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData).to.have.property(\"client_id\");",
+									"    pm.expect(jsonData).to.have.property(\"secret\");",
+									"    pm.expect(jsonData).to.have.property(\"access_token\");",
+									"    pm.expect(jsonData).to.have.property(\"start_date\");",
+									"    pm.expect(jsonData).to.have.property(\"end_date\");",
+									"});",
+									"",
+									"pm.test(\"TC07 | Validate request body properties have correct types\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData.client_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.secret).to.be.a(\"string\");",
+									"    pm.expect(jsonData.access_token).to.be.a(\"string\");",
+									"    pm.expect(jsonData.start_date).to.be.a(\"string\");",
+									"    pm.expect(jsonData.end_date).to.be.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"TC08 | Validate response body has correct properties\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"accounts\");",
+									"    pm.expect(jsonData).to.have.property(\"item\");",
+									"    pm.expect(jsonData).to.have.property(\"request_id\");",
+									"    pm.expect(jsonData).to.have.property(\"total_transactions\");",
+									"    pm.expect(jsonData).to.have.property(\"transactions\");",
+									"});",
+									"",
+									"pm.test(\"TC09 | Validate response body properties have correct types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.accounts).to.be.an(\"array\");",
+									"    pm.expect(jsonData.item).to.be.an(\"object\");",
+									"    pm.expect(jsonData.request_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.total_transactions).to.be.a(\"number\");",
+									"    pm.expect(jsonData.transactions).to.be.an(\"array\");",
+									"});",
+									"",
+									"pm.test(\"TC10 | Validate access token has correct format\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    const tokenRegex = /^access-sandbox-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;",
+									"    pm.expect(jsonData.access_token).to.match(tokenRegex);",
+									"});",
+									"",
+									"pm.test(\"TC11 | Validate each account has required properties with expected types\", function () {",
+									"    let jsonData = pm.response.json();",
+									"    jsonData.accounts.forEach(account => {",
+									"        pm.expect(account).to.have.property('account_id').that.is.a('string');",
+									"        pm.expect(account).to.have.property('mask').that.is.a('string');",
+									"        pm.expect(account).to.have.property('name').that.is.a('string');",
+									"        pm.expect(account).to.have.property('subtype').that.is.a('string');",
+									"        pm.expect(account).to.have.property('type').that.is.a('string');",
+									"        pm.expect(account.account_id).to.satisfy(val => typeof val === 'string' || val === null, \"account_id should be a string or null\");",
+									"        pm.expect(account.subtype).to.satisfy(val => typeof val === 'string' || val === null, \"subtype should be a string or null\");",
+									"    });",
+									"});",
+									"",
+									"pm.test(\"TC12 | Validate each account's balances contain required properties with expected types\", function () {",
+									"    let jsonData = pm.response.json();",
+									"    jsonData.accounts.forEach(account => {",
+									"        pm.expect(account).to.have.property('balances').that.is.an('object');",
+									"        let balances = account.balances;",
+									"        pm.expect(balances).to.have.property('available');",
+									"        pm.expect(balances).to.have.property('current').that.is.a('number');",
+									"        pm.expect(balances).to.have.property('iso_currency_code').that.is.a('string');",
+									"        pm.expect(balances.available).to.satisfy(val => typeof val === 'number' || val === null);",
+									"        pm.expect(balances.iso_currency_code).to.satisfy(val => typeof val === 'string' || val === null);",
+									"    });",
+									"});",
+									"",
+									"pm.test(\"TC12 | Validate item properties and types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const item = jsonData.item;",
+									"    pm.expect(item).to.have.property(\"auth_method\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"available_products\").that.is.an(\"array\");",
+									"    pm.expect(item.available_products).to.satisfy(products => products.every(product => typeof product === \"string\"));",
+									"    pm.expect(item).to.have.property(\"billed_products\").that.is.an(\"array\");",
+									"    pm.expect(item.billed_products).to.satisfy(products => products.every(product => typeof product === \"string\"));",
+									"    pm.expect(item).to.have.property(\"consent_expiration_time\").that.is.null;",
+									"    pm.expect(item).to.have.property(\"error\").that.is.null;",
+									"    pm.expect(item).to.have.property(\"institution_id\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"institution_name\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"item_id\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"products\").that.is.an(\"array\");",
+									"    pm.expect(item.products).to.satisfy(products => products.every(product => typeof product === \"string\"));",
+									"    pm.expect(item).to.have.property(\"update_type\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"webhook\").that.is.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"TC13 | Validate response contains transactions\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.transactions).to.be.an('array').and.to.have.lengthOf.at.least(0);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"client_id\": \"{{plaid_client_id}}\",\n  \"secret\": \"{{plaid_secret}}\",\n  \"access_token\": \"{{access_token}}\",\n  \"start_date\": \"2022-01-01\",\n  \"end_date\": \"2022-01-31\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{plaid_base_url}}/transactions/get",
+							"host": [
+								"{{plaid_base_url}}"
+							],
+							"path": [
+								"transactions",
+								"get"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Accounts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"TC01 | Validate status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"TC02 | Validate request method is POST\", function () {",
+									"    pm.expect(pm.request.method).to.eql(\"POST\");",
+									"});",
+									"",
+									"pm.test(\"TC03 | Validate response time is less than 2000ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"pm.test(\"TC04 | Validate content-type is application/json\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"TC05 | Validate request body has correct properties\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData).to.have.property(\"client_id\");",
+									"    pm.expect(jsonData).to.have.property(\"secret\");",
+									"    pm.expect(jsonData).to.have.property(\"access_token\");",
+									"});",
+									"",
+									"pm.test(\"TC06 | Validate request body properties have correct types\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData.client_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.secret).to.be.a(\"string\");",
+									"    pm.expect(jsonData.access_token).to.be.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"TC07 | Validate response body has correct properties\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"accounts\");",
+									"    pm.expect(jsonData).to.have.property(\"item\");",
+									"    pm.expect(jsonData).to.have.property(\"request_id\");",
+									"});",
+									"",
+									"pm.test(\"TC08 | Validate response body properties have correct types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.accounts).to.be.an(\"array\");",
+									"    pm.expect(jsonData.item).to.be.an(\"object\");",
+									"    pm.expect(jsonData.request_id).to.be.a(\"string\");",
+									"",
+									"});",
+									"",
+									"pm.test(\"TC09 | Validate access token has correct format\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    const tokenRegex = /^access-sandbox-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;",
+									"    pm.expect(jsonData.access_token).to.match(tokenRegex);",
+									"});",
+									"",
+									"pm.test(\"TC10 | Validate accounts properties and types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    jsonData.accounts.forEach(account => {",
+									"        pm.expect(account).to.have.property(\"account_id\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"balances\").that.is.an(\"object\");",
+									"        pm.expect(account.balances).to.have.property(\"available\").that.satisfy(val => typeof val === 'number' || val === null);",
+									"        pm.expect(account.balances).to.have.property(\"current\").that.is.a(\"number\");",
+									"        pm.expect(account.balances).to.have.property(\"iso_currency_code\").that.is.a(\"string\");",
+									"        pm.expect(account.balances).to.have.property(\"limit\").that.satisfy(val => typeof val === 'number' || val === null);",
+									"        pm.expect(account.balances).to.have.property(\"unofficial_currency_code\").that.satisfy(val => typeof val === 'string' || val === null);",
+									"        pm.expect(account).to.have.property(\"mask\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"name\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"official_name\").that.satisfy(val => typeof val === 'string' || val === null);",
+									"        pm.expect(account).to.have.property(\"subtype\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"type\").that.is.a(\"string\");",
+									"    });",
+									"});",
+									"",
+									"pm.test(\"TC11 | Validate item properties and types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const item = jsonData.item;",
+									"    pm.expect(item).to.have.property(\"auth_method\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"available_products\").that.is.an(\"array\");",
+									"    pm.expect(item.available_products).to.satisfy(products => products.every(product => typeof product === \"string\"));",
+									"    pm.expect(item).to.have.property(\"billed_products\").that.is.an(\"array\");",
+									"    pm.expect(item.billed_products).to.satisfy(products => products.every(product => typeof product === \"string\"));",
+									"    pm.expect(item).to.have.property(\"consent_expiration_time\").that.is.null;",
+									"    pm.expect(item).to.have.property(\"error\").that.is.null;",
+									"    pm.expect(item).to.have.property(\"institution_id\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"institution_name\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"item_id\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"products\").that.is.an(\"array\");",
+									"    pm.expect(item.products).to.satisfy(products => products.every(product => typeof product === \"string\"));",
+									"    pm.expect(item).to.have.property(\"update_type\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"webhook\").that.is.a(\"string\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"client_id\": \"{{plaid_client_id}}\",\n  \"secret\": \"{{plaid_secret}}\",\n  \"access_token\": \"{{access_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{plaid_base_url}}/accounts/get",
+							"host": [
+								"{{plaid_base_url}}"
+							],
+							"path": [
+								"accounts",
+								"get"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Balance",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"TC01 | Validate status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"TC02 | Validate request method is POST\", function () {",
+									"    pm.expect(pm.request.method).to.eql(\"POST\");",
+									"});",
+									"",
+									"pm.test(\"TC03 | Validate response time is less than 2000ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"pm.test(\"TC04 | Validate content-type is application/json\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"TC05 | Validate request body has correct properties\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData).to.have.property(\"client_id\");",
+									"    pm.expect(jsonData).to.have.property(\"secret\");",
+									"    pm.expect(jsonData).to.have.property(\"access_token\");",
+									"});",
+									"",
+									"pm.test(\"TC06 | Validate request body properties have correct types\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData.client_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.secret).to.be.a(\"string\");",
+									"    pm.expect(jsonData.access_token).to.be.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"TC07 | Validate response body has correct properties\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"accounts\");",
+									"    pm.expect(jsonData).to.have.property(\"item\");",
+									"    pm.expect(jsonData).to.have.property(\"request_id\");",
+									"});",
+									"",
+									"pm.test(\"TC08 | Validate response body properties have correct types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.accounts).to.be.an(\"array\");",
+									"    pm.expect(jsonData.item).to.be.an(\"object\");",
+									"    pm.expect(jsonData.request_id).to.be.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"TC09 | Validate access token has correct format\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    const tokenRegex = /^access-sandbox-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;",
+									"    pm.expect(jsonData.access_token).to.match(tokenRegex);",
+									"});",
+									"",
+									"pm.test(\"TC10 | Validate accounts properties and types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    jsonData.accounts.forEach(account => {",
+									"        pm.expect(account).to.have.property(\"account_id\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"balances\").that.is.an(\"object\");",
+									"        pm.expect(account.balances).to.have.property(\"available\").that.satisfy(val => typeof val === 'number' || val === null);",
+									"        pm.expect(account.balances).to.have.property(\"current\").that.is.a(\"number\");",
+									"        pm.expect(account.balances).to.have.property(\"iso_currency_code\").that.satisfy(val => typeof val === 'string' || val === null);",
+									"        pm.expect(account.balances).to.have.property(\"limit\").that.satisfy(val => typeof val === 'number' || val === null);",
+									"        pm.expect(account.balances).to.have.property(\"unofficial_currency_code\").that.satisfy(val => typeof val === 'string' || val === null);",
+									"        pm.expect(account).to.have.property(\"mask\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"name\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"official_name\").that.satisfy(val => typeof val === 'string' || val === null);",
+									"        pm.expect(account).to.have.property(\"subtype\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"type\").that.is.a(\"string\");",
+									"    });",
+									"});",
+									"",
+									"pm.test(\"TC11 | Validate item properties and types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const item = jsonData.item;",
+									"    pm.expect(item).to.have.property(\"auth_method\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"available_products\").that.is.an(\"array\");",
+									"    pm.expect(item.available_products).to.satisfy(products => products.every(product => typeof product === \"string\"));",
+									"    pm.expect(item).to.have.property(\"billed_products\").that.is.an(\"array\");",
+									"    pm.expect(item.billed_products).to.satisfy(products => products.every(product => typeof product === \"string\"));",
+									"    pm.expect(item).to.have.property(\"consent_expiration_time\").that.is.null;",
+									"    pm.expect(item).to.have.property(\"error\").that.is.null;",
+									"    pm.expect(item).to.have.property(\"institution_id\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"institution_name\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"item_id\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"products\").that.is.an(\"array\");",
+									"    pm.expect(item.products).to.satisfy(products => products.every(product => typeof product === \"string\"));",
+									"    pm.expect(item).to.have.property(\"update_type\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"webhook\").that.is.a(\"string\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"client_id\": \"{{plaid_client_id}}\",\n  \"secret\": \"{{plaid_secret}}\",\n  \"access_token\": \"{{access_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{plaid_base_url}}/accounts/balance/get",
+							"host": [
+								"{{plaid_base_url}}"
+							],
+							"path": [
+								"accounts",
+								"balance",
+								"get"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Identity",
+			"item": [
+				{
+					"name": "Get Identity Information",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"TC01 | Validate status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"TC02 | Validate request method is POST\", function () {",
+									"    pm.expect(pm.request.method).to.eql(\"POST\");",
+									"});",
+									"",
+									"pm.test(\"TC03 | Validate response time is less than 2000ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"pm.test(\"TC04 | Validate content-type is application/json\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"TC05 | Validate request body has correct properties\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData).to.have.property(\"client_id\");",
+									"    pm.expect(jsonData).to.have.property(\"secret\");",
+									"    pm.expect(jsonData).to.have.property(\"access_token\");",
+									"});",
+									"",
+									"pm.test(\"TC06 | Validate request body properties have correct types\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData.client_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.secret).to.be.a(\"string\");",
+									"    pm.expect(jsonData.access_token).to.be.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"TC07 | Validate response body has correct properties\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"accounts\");",
+									"    pm.expect(jsonData).to.have.property(\"item\");",
+									"    pm.expect(jsonData).to.have.property(\"request_id\");",
+									"});",
+									"",
+									"pm.test(\"TC08 | Validate response body properties have correct types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.accounts).to.be.an(\"array\");",
+									"    pm.expect(jsonData.item).to.be.an(\"object\");",
+									"    pm.expect(jsonData.request_id).to.be.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"TC09 | Validate access token has correct format\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    const tokenRegex = /^access-sandbox-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;",
+									"    pm.expect(jsonData.access_token).to.match(tokenRegex);",
+									"});",
+									"",
+									"pm.test(\"TC10 | Validate accounts properties and types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    jsonData.accounts.forEach(account => {",
+									"        pm.expect(account).to.have.property(\"account_id\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"balances\").that.is.an(\"object\");",
+									"        pm.expect(account.balances).to.have.property(\"available\").that.satisfy(val => typeof val === 'number' || val === null);",
+									"        pm.expect(account.balances).to.have.property(\"current\").that.is.a(\"number\");",
+									"        pm.expect(account.balances).to.have.property(\"iso_currency_code\").that.satisfy(val => typeof val === 'string' || val === null);",
+									"        pm.expect(account.balances).to.have.property(\"limit\").that.satisfy(val => typeof val === 'number' || val === null);",
+									"        pm.expect(account.balances).to.have.property(\"unofficial_currency_code\").that.satisfy(val => typeof val === 'string' || val === null);",
+									"        pm.expect(account).to.have.property(\"mask\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"name\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"official_name\").that.satisfy(val => typeof val === 'string' || val === null);",
+									"        pm.expect(account).to.have.property(\"subtype\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"type\").that.is.a(\"string\");",
+									"        pm.expect(account).to.have.property(\"owners\").that.is.an(\"array\");",
+									"        account.owners.forEach(owner => {",
+									"            pm.expect(owner).to.have.property(\"addresses\").that.is.an(\"array\");",
+									"            owner.addresses.forEach(address => {",
+									"                pm.expect(address).to.have.property(\"data\").that.is.an(\"object\");",
+									"                pm.expect(address.data).to.have.property(\"city\").that.is.a(\"string\");",
+									"                pm.expect(address.data).to.have.property(\"country\").that.is.a(\"string\");",
+									"                pm.expect(address.data).to.have.property(\"postal_code\").that.is.a(\"string\");",
+									"                pm.expect(address.data).to.have.property(\"region\").that.is.a(\"string\");",
+									"                pm.expect(address.data).to.have.property(\"street\").that.is.a(\"string\");",
+									"                pm.expect(address).to.have.property(\"primary\").that.is.a(\"boolean\");",
+									"            });",
+									"",
+									"            pm.expect(owner).to.have.property(\"emails\").that.is.an(\"array\");",
+									"            owner.emails.forEach(email => {",
+									"                pm.expect(email).to.have.property(\"data\").that.is.a(\"string\");",
+									"                pm.expect(email).to.have.property(\"primary\").that.is.a(\"boolean\");",
+									"                pm.expect(email).to.have.property(\"type\").that.is.a(\"string\");",
+									"            });",
+									"",
+									"            pm.expect(owner).to.have.property(\"names\").that.is.an(\"array\");",
+									"            pm.expect(owner.names).to.satisfy(names => names.every(name => typeof name === \"string\"));",
+									"",
+									"            pm.expect(owner).to.have.property(\"phone_numbers\").that.is.an(\"array\");",
+									"            owner.phone_numbers.forEach(phone => {",
+									"                pm.expect(phone).to.have.property(\"data\").that.is.a(\"string\");",
+									"                pm.expect(phone).to.have.property(\"primary\").that.is.a(\"boolean\");",
+									"                pm.expect(phone).to.have.property(\"type\").that.is.a(\"string\");",
+									"",
+									"            });",
+									"        });",
+									"    });",
+									"});",
+									"pm.test(\"TC11 | Validate item properties and types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const item = jsonData.item;",
+									"    pm.expect(item).to.have.property(\"auth_method\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"available_products\").that.is.an(\"array\");",
+									"    pm.expect(item.available_products).to.satisfy(products => products.every(product => typeof product === \"string\"));",
+									"    pm.expect(item).to.have.property(\"billed_products\").that.is.an(\"array\");",
+									"    pm.expect(item.billed_products).to.satisfy(products => products.every(product => typeof product === \"string\"));",
+									"    pm.expect(item).to.have.property(\"consent_expiration_time\").that.is.null;",
+									"    pm.expect(item).to.have.property(\"error\").that.is.null;",
+									"    pm.expect(item).to.have.property(\"institution_id\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"institution_name\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"item_id\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"products\").that.is.an(\"array\");",
+									"    pm.expect(item.products).to.satisfy(products => products.every(product => typeof product === \"string\"));",
+									"    pm.expect(item).to.have.property(\"update_type\").that.is.a(\"string\");",
+									"    pm.expect(item).to.have.property(\"webhook\").that.is.a(\"string\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"client_id\": \"{{plaid_client_id}}\",\n  \"secret\": \"{{plaid_secret}}\",\n  \"access_token\": \"{{access_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{plaid_base_url}}/identity/get",
+							"host": [
+								"{{plaid_base_url}}"
+							],
+							"path": [
+								"identity",
+								"get"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Errors",
+			"item": [
+				{
+					"name": "Simulate Login Error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// TC01 | Validate status",
+									"pm.test(\"TC01 | Validate status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// TC02 | Validate method",
+									"pm.test(\"TC02 | Validate request method is POST\", function () {",
+									"    pm.expect(pm.request.method).to.eql(\"POST\");",
+									"});",
+									"",
+									"// TC03 | Validate response time",
+									"pm.test(\"TC03 | Validate response time is less than 2000ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// TC04 | Validate content-type",
+									"pm.test(\"TC04 | Validate content-type is application/json\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"});",
+									"",
+									"// TC05 | Validate request body properties",
+									"pm.test(\"TC05 | Validate request body has correct properties\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData).to.have.property(\"client_id\");",
+									"    pm.expect(jsonData).to.have.property(\"secret\");",
+									"    pm.expect(jsonData).to.have.property(\"access_token\");",
+									"});",
+									"",
+									"// TC06 | Validate request body property types",
+									"pm.test(\"TC06 | Validate request body properties have correct types\", function () {",
+									"    const requestBody = pm.request.body.raw;",
+									"    const jsonData = JSON.parse(requestBody);",
+									"    pm.expect(jsonData.client_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.secret).to.be.a(\"string\");",
+									"    pm.expect(jsonData.access_token).to.be.a(\"string\");",
+									"});",
+									"",
+									"// TC07 | Validate error response properties",
+									"pm.test(\"TC07 | Validate error response has correct properties\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"display_message\");",
+									"    pm.expect(jsonData).to.have.property(\"documentation_url\");",
+									"    pm.expect(jsonData).to.have.property(\"error_code\");",
+									"    pm.expect(jsonData).to.have.property(\"error_message\");",
+									"    pm.expect(jsonData).to.have.property(\"error_type\");",
+									"    pm.expect(jsonData).to.have.property(\"request_id\");",
+									"    pm.expect(jsonData).to.have.property(\"suggested_action\");",
+									"});",
+									"",
+									"// TC08 | Validate error response property types",
+									"pm.test(\"TC08 | Validate error response properties have correct types\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.display_message).to.be.null;",
+									"    pm.expect(jsonData.documentation_url).to.be.a(\"string\");",
+									"    pm.expect(jsonData.error_code).to.be.a(\"string\");",
+									"    pm.expect(jsonData.error_message).to.be.a(\"string\");",
+									"    pm.expect(jsonData.error_type).to.be.a(\"string\");",
+									"    pm.expect(jsonData.request_id).to.be.a(\"string\");",
+									"    pm.expect(jsonData.suggested_action).to.be.null;",
+									"});",
+									"",
+									"// TC09 | Validate error code",
+									"pm.test(\"TC09 | Validate error code is INVALID_FIELD\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error_code).to.eql(\"INVALID_FIELD\");",
+									"});",
+									"",
+									"// TC10 | Validate error message",
+									"pm.test(\"TC10 | Validate error message is correct\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error_message).to.eql(\"client_id must be a properly formatted, non-empty string\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"client_id\": \"{{client_id}}\",\n  \"secret\": \"{{plaid_secret}}\",\n  \"access_token\": \"{{access_token}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{plaid_base_url}}/sandbox/item/reset_login",
+							"host": [
+								"{{plaid_base_url}}"
+							],
+							"path": [
+								"sandbox",
+								"item",
+								"reset_login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
