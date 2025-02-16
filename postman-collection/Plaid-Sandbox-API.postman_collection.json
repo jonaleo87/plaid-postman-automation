@@ -331,6 +331,17 @@
 					"name": "Get Transactions",
 					"event": [
 						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function() {",
+									"    console.log(\"Esperando 2 segundos antes de ejecutar la solicitud...\");",
+									"}, 2000);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
 							"listen": "test",
 							"script": {
 								"exec": [
